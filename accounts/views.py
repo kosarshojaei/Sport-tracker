@@ -26,3 +26,51 @@ def login_view(request):
     else:
         form = UserLoginForm()
     return render(request, 'accounts/login.html', {'form': form})
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def dashboard(request):
+    return render(request, 'accounts/dashboard.html', {'user': request.user})
+
+from django.contrib.auth.forms import UserChangeForm
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UserChangeForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = UserChangeForm(instance=request.user)
+
+    return render(request, 'accounts/edit_profile.html', {'form': form})
+
+
+from django.shortcuts import render, redirect
+from .models import UserProfile
+
+def signup_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        email = request.POST['email']
+        phone = request.POST['phone']
+        gender = request.POST['gender']
+        birthdate = request.POST['birthdate']
+        password = request.POST['password']  # تو پروژه واقعی باید هش بشه
+
+        # ذخیره در دیتابیس
+        UserProfile.objects.create(
+            username=username,
+            email=email,
+            phone=phone,
+            gender=gender,
+            birthdate=birthdate,
+            password=password
+        )
+        return redirect('login')  # بعد از ثبت‌نام می‌ره به صفحه لاگین
+
+    return render(request, 'signup.html')
+
